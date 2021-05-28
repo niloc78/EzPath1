@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="@drawable/background">
+
+    <ViewAnimator
+        android:id="@+id/view_animator"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/dashboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center"
+            android:baselineAligned="false">
+
+            <ImageView
+                android:id="@+id/let_us_help"
+                android:layout_width="match_parent"
+                android:layout_height="504dp"
+                android:src="@drawable/letushelp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal"
+                android:background="@drawable/location_search_bar">
+
+                <EditText
+                    android:id="@+id/location_search_bar"
+                    android:layout_width="300dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginBottom="10dp"
+                    android:textSize="30sp"
+                    android:hint="Enter your location"
+                    android:background="@android:color/transparent"
+                    android:textCursorDrawable="@null"
+                    android:textColor="@color/black"
+                    android:singleLine="true"
+                    android:layout_below="@+id/let_us_help" />
+
+                <Button
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="9dp"
+                    android:background="@drawable/search_icon" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom|right">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="75dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginRight="20dp"
+                    android:onClick="navigateToHomeFromDash"
+                    android:background="@drawable/cont_icon" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/home_map_notes_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ViewAnimator
+                android:id="@+id/view_animator_home_map_notes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:id="@+id/notes_page_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="center">
+
+                    <EditText
+                        android:id="@+id/notes_page"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxWidth="100dp"
+                        android:gravity="top|left"
+                        android:paddingLeft="35dp"
+                        android:paddingRight="35dp"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="20dp"
+                        android:scrollbars="vertical"
+                        android:background="@drawable/notes_page"/>
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/home"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_gravity="center">
+
+                    <Button
+                        android:id="@+id/side_menu"
+                        android:layout_width="35dp"
+                        android:layout_height="25dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="25dp"
+                        android:alpha="0.75"
+                        android:background="@drawable/side_menu_icon"/>
+
+                    <LinearLayout
+                        android:id="@+id/errand_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:layout_marginTop="25dp"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center"
+                        android:background="@drawable/errand_bar">
+
+                        <TextView
+                            android:id="@+id/todays_errands"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:textSize="31sp"
+                            android:gravity="center"
+                            android:layout_marginLeft="80dp"
+                            android:textColor="#B2B1B1"
+                            android:fontFamily="@font/avenirnextreg"
+                            android:text="Today's errands"/>
+                        <Button
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="30dp"
+                            android:background="@drawable/add_icon"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/map_page_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/logo"
+                        android:alpha="0.25"/>
+                </RelativeLayout>
+
+
+
+
+            </ViewAnimator>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0.1dp"
+                android:background="@color/black"
+                app:layout_constraintBottom_toTopOf="@+id/nav_bar"/>
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/nav_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/white"
+                app:menu="@menu/bottom_nav"
+                android:gravity="center" />
+
+        </RelativeLayout>
+
+
+
+    </ViewAnimator>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
