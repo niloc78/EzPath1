@@ -31,35 +31,32 @@
                 android:layout_height="504dp"
                 android:src="@drawable/letushelp"/>
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/search_bar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_marginTop="30dp"
                 android:orientation="horizontal"
                 android:background="@drawable/location_search_bar">
 
-                <EditText
-                    android:id="@+id/location_search_bar"
+                <fragment
+                    android:id="@+id/autocomplete_fragment"
+                    android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
                     android:layout_width="300dp"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="30dp"
                     android:layout_marginBottom="10dp"
-                    android:textSize="30sp"
-                    android:hint="Enter your location"
-                    android:background="@android:color/transparent"
-                    android:textCursorDrawable="@null"
-                    android:textColor="@color/black"
-                    android:singleLine="true"
-                    android:layout_below="@+id/let_us_help" />
+                    android:textColor="@color/black" />
 
                 <Button
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="9dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="27dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="30dp"
                     android:background="@drawable/search_icon" />
-
-            </LinearLayout>
+            </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -69,10 +66,12 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="75dp"
-                    android:layout_marginBottom="20dp"
                     android:layout_marginRight="20dp"
-                    android:onClick="navigateToHomeFromDash"
-                    android:background="@drawable/cont_icon" />
+                    android:layout_marginBottom="10dp"
+                    android:textSize="21sp"
+                    android:background="@android:color/transparent"
+                    android:hint="Skip"
+                    android:onClick="navigateToHomeFromDash" />
             </RelativeLayout>
         </LinearLayout>
 
