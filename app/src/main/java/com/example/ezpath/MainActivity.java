@@ -4,12 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,13 +57,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<String> errandArray;
     ArrayAdapter<String> errandArrayAdapter;
     Button addErrandButton;
+    Button sideMenuButton;
     private static final int PERMISSION_REQUEST_CODE = 1;
+    DrawerLayout drawerLayout;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        drawerSetUp();
 
         viewAnimator_dash_home = (ViewAnimator) findViewById(R.id.view_animator);
 
@@ -74,8 +80,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         initializePlaces();
         initPlaceSelectionListener();
 
-
-
         GoogleMapOptions options = new GoogleMapOptions();
         options.compassEnabled(true)
                 .zoomControlsEnabled(true);
@@ -87,6 +91,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         errandAddSetUp();
+    }
+
+    public void drawerSetUp() {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
+        sideMenuButton = (Button) findViewById(R.id.side_menu);
+        sideMenuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(Gravity.LEFT);
+            }
+        });
     }
 
     public void errandAddSetUp() {
@@ -105,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     public void addErrand(String errand) {
-        errandArray.add("Hello test name");
+        errandArray.add(errand);
         errandArrayAdapter.notifyDataSetChanged();
     }
     public void openErrandDialog() {
@@ -293,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (viewAnimator_dash_home.getCurrentView().getId() == findViewById(R.id.dashboard).getId()) {
             moveTaskToBack(true);
         } else {
+            drawerLayout.closeDrawer(Gravity.LEFT);
             navigateToDash();
         }
 

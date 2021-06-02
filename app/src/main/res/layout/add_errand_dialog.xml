@@ -9,6 +9,8 @@
         android:id="@+id/edit_errand"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Errand (eg. buy pencils" />
+        android:hint="Errand (eg. buy pencils"
+        android:singleLine="true"
+        android:maxLength="20"/>
 
 </RelativeLayout>
