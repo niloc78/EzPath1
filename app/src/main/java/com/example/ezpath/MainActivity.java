@@ -7,12 +7,16 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -20,6 +24,14 @@ import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -27,13 +39,22 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
 
     ViewAnimator viewAnimator_dash_home;
     ViewAnimator viewAnimator_home_notes_map;
     BottomNavigationView bottom_nav_view;
+    SupportMapFragment mapFragment;
+    GoogleMap map;
+    ListView errands_list;
+    ArrayList<String> errandArray;
+    ArrayAdapter<String> errandArrayAdapter;
+    Button addErrandButton;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
 
@@ -53,7 +74,51 @@ public class MainActivity extends AppCompatActivity {
         initializePlaces();
         initPlaceSelectionListener();
 
+
+
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.compassEnabled(true)
+                .zoomControlsEnabled(true);
+        mapFragment = SupportMapFragment.newInstance(options);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.map_container, mapFragment)
+                .commit();
+        mapFragment.getMapAsync(this);
+
+        errandAddSetUp();
     }
+
+    public void errandAddSetUp() {
+        errands_list = (ListView) findViewById(R.id.errands_list);
+        addErrandButton = (Button) findViewById(R.id.add_errand_button);
+        addErrandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openErrandDialog();
+            }
+        });
+
+        errandArray = new ArrayList<String>();
+        errandArrayAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.errand_item, R.id.errand_name, errandArray);
+        errands_list.setAdapter(errandArrayAdapter);
+    }
+    @Override
+    public void addErrand(String errand) {
+        errandArray.add("Hello test name");
+        errandArrayAdapter.notifyDataSetChanged();
+    }
+    public void openErrandDialog() {
+        AddErrandDialog errandDialog = new AddErrandDialog();
+        errandDialog.show(getSupportFragmentManager(), "errand dialog");
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(0,0)));
+        map = googleMap;
+    }
+
 
     public void checkRequestPermissions() {
         if (checkPermission()) {
@@ -98,17 +163,31 @@ public class MainActivity extends AppCompatActivity {
         //init
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         //specify type of place data returned
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
         //handle response
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                Toast.makeText(MainActivity.this, "place selected", Toast.LENGTH_SHORT).show();
+                LatLng latLng = place.getLatLng();
+                Toast.makeText(MainActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
+
+                //add function once place is selected
+                if(map != null) {
+                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                    map.animateCamera(CameraUpdateFactory.zoomTo(10.0f));
+                    map.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title("Current Location"));
+                } else {
+                    Toast.makeText(MainActivity.this, "map is null", Toast.LENGTH_SHORT).show();
+                }
+//
             }
 
             @Override
             public void onError(@NonNull Status status) {
                 Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
+                //on close or error
             }
         });
         ((View) findViewById(R.id.places_autocomplete_search_button)).setVisibility(View.GONE);
@@ -168,11 +247,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void nextView(View v) {
-        viewAnimator_dash_home.setInAnimation(this, R.anim.slide_in_right);
-        viewAnimator_dash_home.setOutAnimation(this, R.anim.slide_out_left);
-        viewAnimator_dash_home.showNext();
-    }
 
     public void navigateToHomeFromDash(View v) {
         viewAnimator_dash_home.setInAnimation(this, R.anim.slide_in_right);

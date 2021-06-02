@@ -85,6 +85,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+
                 <RelativeLayout
                     android:id="@+id/notes_page_layout"
                     android:layout_width="match_parent"
@@ -143,36 +144,48 @@
                             android:fontFamily="@font/avenirnextreg"
                             android:text="Today's errands"/>
                         <Button
+                            android:id="@+id/add_errand_button"
                             android:layout_width="35dp"
                             android:layout_height="35dp"
                             android:layout_gravity="center"
                             android:layout_marginLeft="30dp"
-                            android:background="@drawable/add_icon"/>
+                            android:background="@drawable/add_icon" />
                     </LinearLayout>
+
+                    <ListView
+                        android:id="@+id/errands_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@null"/>
                 </LinearLayout>
 
                 <RelativeLayout
                     android:id="@+id/map_page_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center">
+                    android:layout_height="match_parent">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/logo"
                         android:alpha="0.25"/>
+
+                    <com.google.android.gms.maps.MapView
+                        android:id="@+id/map_container"
+                        android:layout_width="match_parent"
+                        android:layout_alignParentTop="true"
+                        android:layout_height="700dp" />
                 </RelativeLayout>
 
 
-
-
             </ViewAnimator>
+
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0.1dp"
                 android:background="@color/black"
+                android:id="@+id/line"
                 app:layout_constraintBottom_toTopOf="@+id/nav_bar"/>
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -185,9 +198,6 @@
                 android:gravity="center" />
 
         </RelativeLayout>
-
-
-
     </ViewAnimator>
 
 
