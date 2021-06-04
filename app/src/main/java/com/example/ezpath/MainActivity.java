@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,6 +26,9 @@ import android.widget.Toast;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 
+import com.android.volley.VolleyError;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,6 +37,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -41,10 +46,15 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
 
@@ -60,7 +70,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button sideMenuButton;
     private static final int PERMISSION_REQUEST_CODE = 1;
     DrawerLayout drawerLayout;
-
+    IResult mResultCallBack;
+    Marker currMarker;
+    Place currPlace;
+    GetUrlContent mGetUrlContent;
+    private static final String API_KEY = BuildConfig.MAPS_API_KEY;
+    ObjectMapper objectMapper;
+    ErrandResults testErrandResults;
+    Path testPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +108,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         errandAddSetUp();
+
+        objectMapper = new ObjectMapper();
+
+        mResultCallBack = new IResult() {
+            @Override
+            public void notifySuccess(String requestType, JSONObject response) {
+                Log.d("errand test response", "Volley requester" + requestType);
+                Log.d("errand test response", "Volley JSON post" + response);
+                try {
+                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class);
+                    testErrandResults = errandResults;
+                    Result[] results = errandResults.getResults();
+//                    Result bestPlace = errandResults.chooseBestPlace();
+
+//                    Log.d("parsed result", "best place based on rating: " + bestPlace.getName() + " location: " + bestPlace.getFormatted_address() + " coords: " + bestPlace.getGeometry().getLocation().getLatLng());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void notifyError(String requestType, VolleyError error) {
+                Log.d("error response", "Volley requester" + requestType);
+                Log.d("error response", "Volley JSON post" + "That didnt work!");
+            }
+        };
+        mGetUrlContent = new GetUrlContent(mResultCallBack, this);
+        //example
+        mGetUrlContent.getDataVolley("GETCALL", "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=***REMOVED***");
+
+    }
+
+    public void uwuTest(View v) {
+        testPath = new Path(this);
+        testPath.calculateDistanceMatrix(currPlace, testErrandResults.getResults());
+    }
+    public void uwu2Test(View v) {
+        Log.d("DISTANCE MATRIX outside", Arrays.toString(testPath.getDistMatrix()));
     }
 
     public void drawerSetUp() {
@@ -120,11 +176,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         errandArrayAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.errand_item, R.id.errand_name, errandArray);
         errands_list.setAdapter(errandArrayAdapter);
     }
+
+    public void getErrandSearchPlaceResults(Place placeSelected, String keywords, int r) {
+        String radius = "&radius=" + Integer.toString(r);
+        String latitude = Double.toString(placeSelected.getLatLng().latitude);
+        String longitude = Double.toString(placeSelected.getLatLng().longitude);
+        String location = "&location=" + latitude + "," + longitude;
+        String query = "query=" + keywords.replaceAll(" ", "+");
+        String key = "&key=" + API_KEY;
+        //String rankby = "&rankby=distance";
+
+        String url = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
+        url += query + location + radius + key;
+        mGetUrlContent.getDataVolley("GETCALL", url);
+
+    }
     @Override
     public void addErrand(String errand) {
         errandArray.add(errand);
+        getErrandSearchPlaceResults(currPlace, errand, 1);
         errandArrayAdapter.notifyDataSetChanged();
     }
+
     public void openErrandDialog() {
         AddErrandDialog errandDialog = new AddErrandDialog();
         errandDialog.show(getSupportFragmentManager(), "errand dialog");
@@ -164,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case R.id.map:
                         navigateToMap();
                         break;
-
                 }
                 return false;
             }
@@ -186,15 +258,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onPlaceSelected(@NonNull Place place) {
                 LatLng latLng = place.getLatLng();
+                currPlace = place;
                 Toast.makeText(MainActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
 
                 //add function once place is selected
                 if(map != null) {
                     map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                     map.animateCamera(CameraUpdateFactory.zoomTo(10.0f));
-                    map.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title("Current Location"));
+                    if (currMarker == null) {
+                        currMarker = map.addMarker(new MarkerOptions()
+                                .position(latLng)
+                                .title("Current Location"));
+                    } else {
+                        currMarker.setPosition(latLng);
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, "map is null", Toast.LENGTH_SHORT).show();
                 }
@@ -212,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void initializePlaces() {
-        String apiKey = getString(R.string.api_key);
+        String apiKey = API_KEY;
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), apiKey);
         }

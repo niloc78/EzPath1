@@ -114,6 +114,18 @@
                         android:paddingBottom="20dp"
                         android:scrollbars="vertical"
                         android:background="@drawable/notes_page"/>
+                    <Button
+                        android:id="@+id/uwuTest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="test button"
+                        android:onClick="uwuTest"/>
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@+id/uwuTest"
+                        android:text="click here for distance matrix"
+                        android:onClick="uwu2Test"/>
                 </RelativeLayout>
 
                 <LinearLayout
