@@ -36,9 +36,13 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -54,6 +58,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
@@ -78,6 +85,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ObjectMapper objectMapper;
     ErrandResults testErrandResults;
     Path testPath;
+    Path path;
+    ArrayList<Result> bestResults;
+    Polyline polyline;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         errandAddSetUp();
-
+        bestResults = new ArrayList<Result>();
         objectMapper = new ObjectMapper();
 
         mResultCallBack = new IResult() {
@@ -117,16 +127,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("errand test response", "Volley requester" + requestType);
                 Log.d("errand test response", "Volley JSON post" + response);
                 try {
-                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class);
-                    testErrandResults = errandResults;
+                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class); // map json results to object
+                    testErrandResults = errandResults; // rename
                     Result[] results = errandResults.getResults();
-//                    Result bestPlace = errandResults.chooseBestPlace();
-
+                    errandResults.calculateDistanceMatrix(currPlace);
+                    Result bestPlace = errandResults.chooseBestPlace(1500);
+                    bestResults.add(bestPlace);
+                    map.addMarker(new MarkerOptions()
+                            .position(bestPlace.getGeometry().getLocation().getLatLng())
+                            .title(bestPlace.getName()));
+                    updatePolyMap();
 //                    Log.d("parsed result", "best place based on rating: " + bestPlace.getName() + " location: " + bestPlace.getFormatted_address() + " coords: " + bestPlace.getGeometry().getLocation().getLatLng());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
 
             @Override
@@ -136,18 +150,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         mGetUrlContent = new GetUrlContent(mResultCallBack, this);
-        //example
-        mGetUrlContent.getDataVolley("GETCALL", "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=***REMOVED***");
-
     }
 
     public void uwuTest(View v) {
-        testPath = new Path(this);
-        testPath.calculateDistanceMatrix(currPlace, testErrandResults.getResults());
+
+        testPath = new Path(bestResults, this);
+        testPath.getPolyline(currPlace, new PolyCallback() {
+            @Override
+            public void onSuccess() {
+                polyline.remove();
+                polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
+            }
+        });
+
     }
+    public void updatePolyMap() {
+        testPath = new Path(bestResults, this);
+        testPath.getPolyline(currPlace, new PolyCallback() {
+            @Override
+            public void onSuccess() {
+                if (polyline != null) {
+                    polyline.remove();
+                }
+                polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
+            }
+        });
+    }
+
     public void uwu2Test(View v) {
-        Log.d("DISTANCE MATRIX outside", Arrays.toString(testPath.getDistMatrix()));
+        polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
     }
+
+//    public void calculate() {
+//        if ((currPlace != null) && (!bestResults.isEmpty())) {
+//            path = new Path(this);
+//            Result[] res = (Result[]) bestResults.toArray();
+//            path.calculateDistanceMatrixAndBuildPath(currPlace, res);
+//        }
+//    }
 
     public void drawerSetUp() {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -178,24 +218,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void getErrandSearchPlaceResults(Place placeSelected, String keywords, int r) {
-        String radius = "&radius=" + Integer.toString(r);
+        //String radius = "&radius=" + Integer.toString(r);
         String latitude = Double.toString(placeSelected.getLatLng().latitude);
         String longitude = Double.toString(placeSelected.getLatLng().longitude);
         String location = "&location=" + latitude + "," + longitude;
         String query = "query=" + keywords.replaceAll(" ", "+");
         String key = "&key=" + API_KEY;
-        //String rankby = "&rankby=distance";
+        String rankby = "&rankby=distance";
 
         String url = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
-        url += query + location + radius + key;
+        url += query + location + rankby + key;
         mGetUrlContent.getDataVolley("GETCALL", url);
-
     }
+
     @Override
     public void addErrand(String errand) {
-        errandArray.add(errand);
-        getErrandSearchPlaceResults(currPlace, errand, 1);
-        errandArrayAdapter.notifyDataSetChanged();
+        if (errandArray.size() < 9 && currPlace != null) { // max errands is 9
+            errandArray.add(errand);
+            getErrandSearchPlaceResults(currPlace, errand, 1);
+            errandArrayAdapter.notifyDataSetChanged();
+        }
     }
 
     public void openErrandDialog() {
@@ -263,8 +305,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //add function once place is selected
                 if(map != null) {
-                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                    map.animateCamera(CameraUpdateFactory.zoomTo(10.0f));
+                    CameraPosition cameraPosition = new CameraPosition.Builder().target(latLng).zoom(10).build();
+                    map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     if (currMarker == null) {
                         currMarker = map.addMarker(new MarkerOptions()
                                 .position(latLng)

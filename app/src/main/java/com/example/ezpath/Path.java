@@ -6,98 +6,86 @@ import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.maps.android.PolyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Path {
-    LinkedList<Result> bestPath;
+    private String overview_polyline;
     private Context context;
-    private int[] distMatrix;
+    private ArrayList<Result> bestResults;
+    private List<LatLng> decoded_poly;
 
-    public Path(Context context) {
+
+    public Path(ArrayList<Result> res, Context context) {
+        this.bestResults = res;
         this.context = context;
     }
-
     public Context getContext() {
         return context;
-    }
-
-    public int[] getDistMatrix() {
-        return distMatrix;
-    }
-
-    public LinkedList<Result> getBestPath() {
-        return bestPath;
-    }
-
-    public void setDistMatrix(int[] distMatrix) {
-        this.distMatrix = distMatrix;
     }
 
     public void setContext(Context context) {
         this.context = context;
     }
 
-    public void setBestPath(LinkedList<Result> bestPath) {
-        this.bestPath = bestPath;
+    public List<LatLng> getDecoded_poly() {
+        return decoded_poly;
     }
-    public void append(Result r) {
-        bestPath.add(r);
+
+    public String getOverview_polyline() {
+        return overview_polyline;
     }
-    public Result remove(int i) {
-        return bestPath.remove(i);
+
+    public ArrayList<Result> getBestResults() {
+        return bestResults;
     }
-    public Result pop() {
-        return bestPath.pollLast();
+
+    public void setBestResults(ArrayList<Result> bestResults) {
+        this.bestResults = bestResults;
     }
-    public Result dequeue() {
-        return bestPath.pollFirst();
+
+    public void setDecoded_poly(List<LatLng> decoded_poly) {
+        this.decoded_poly = decoded_poly;
     }
-    public void insertAt(int i, Result r) {
-        bestPath.add(i, r);
+
+    public void setOverview_polyline(String overview_polyline) {
+        this.overview_polyline = overview_polyline;
     }
-    public void clear() {
-        bestPath.clear();
-    }
-    public boolean isEmpty() {
-        return bestPath.isEmpty();
-    }
-    public Result getFirst() {
-        return bestPath.peekFirst();
-    }
-    public Result getLast() {
-        return bestPath.peekLast();
-    }
-    public Result get(int i) {
-        return bestPath.get(i);
-    }
-    public void calculateDistanceMatrix(Place source, Result[] bestResults) {
+
+    public void getPolyline(Place source, final PolyCallback callBack) {
         IResult mResultCallback = new IResult() {
             @Override
             public void notifySuccess(String requestType, JSONObject response) {
                 try {
-                    Log.d("Volley matrix response", "Volley matrix response: " + response);
-                    JSONArray elements = response.getJSONArray("rows").getJSONObject(0).getJSONArray("elements");
-                    Log.d("elements: ", "elements: " + elements.toString());
-                    distMatrix = new int[elements.length()];
-                    for (int i = 0; i <= elements.length() - 1; i++) {
-                        distMatrix[i] = elements.getJSONObject(i).getJSONObject("distance").getInt("value");
-                        Log.d("added", "added: " + distMatrix[i]);
-                    }
-                    Log.d("calculate matrix sucess", "success");
-                    Log.d("DISTANCE MATRIX: ", Arrays.toString(getDistMatrix()));
-                } catch (JSONException e) {
+                    Log.d("Direction results ", "Direction results: " + response.toString());
+                    JSONArray routes = response.getJSONArray("routes");
+                    JSONObject route = routes.getJSONObject(0);
+                    JSONObject polyline = route.getJSONObject("overview_polyline");
+                    overview_polyline = polyline.getString("points");
+                    Log.d("overview_polyline", "overview polyline: " + overview_polyline);
+
+                    decoded_poly = PolyUtil.decode(overview_polyline);
+                    Log.d("decoded_poly", "decoded poly: " + decoded_poly);
+                    callBack.onSuccess();
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-
             @Override
             public void notifyError(String requestType, VolleyError error) {
                 Log.d("calculate matrix error", "error");
@@ -106,24 +94,19 @@ public class Path {
 
         GetUrlContent mGetUrlContent = new GetUrlContent(mResultCallback, context);
 
-        String origin = "origins=place_id:" + source.getId();
-        String destinations = "&destinations=place_id:" + bestResults[0].getPlace_id();
+        String origin = "origin=place_id:" + source.getId();
+        String destination = "&destination=place_id:" + source.getId();
+        String waypoints = "&waypoints=" + "place_id:" + bestResults.get(0).getPlace_id();
         String api_key = "&key=" + BuildConfig.MAPS_API_KEY;
 
-        for (int i = 1; i <= bestResults.length - 1; i++) {
-            if (bestResults[i].getPlace_id() == null) {
-                Log.d("place id null:", "place id is null");
-            }
-            destinations += "|" + "place_id:" + bestResults[i].getPlace_id();
-
+        for (int i = 1; i <= bestResults.size() - 1; i++) {
+            waypoints += "|place_id:" + bestResults.get(i).getPlace_id();
         }
 
-        String url = "https://maps.googleapis.com/maps/api/distancematrix/json?";
-        url += origin + destinations + api_key;
+        String url = "https://maps.googleapis.com/maps/api/directions/json?";
+        url += origin + destination + waypoints + api_key;
         mGetUrlContent.getDataVolley("GETCALL", url);
-    }
-
-    public void buildBestPath(String source_id, Result[] bestResults) {
 
     }
+
 }
