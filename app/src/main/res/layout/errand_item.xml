@@ -35,7 +35,14 @@
                 android:textSize="36sp"
                 android:layout_weight="0.75"
                 android:background="@android:color/transparent" />
-
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:layout_weight="1.25"
+                android:background="@android:color/transparent"/>
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

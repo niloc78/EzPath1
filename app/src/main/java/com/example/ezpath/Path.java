@@ -90,6 +90,10 @@ public class Path {
             public void notifyError(String requestType, VolleyError error) {
                 Log.d("calculate matrix error", "error");
             }
+
+            public void notifySuccess(String requestType, JSONObject response, String errand) {
+                //not used, stay empty
+            }
         };
 
         GetUrlContent mGetUrlContent = new GetUrlContent(mResultCallback, context);

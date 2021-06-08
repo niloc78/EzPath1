@@ -78,5 +78,31 @@ public class GetUrlContent {
 
         }
     }
+    public void getDataVolley(final String requestType, String url, String errand) {
+        try {
+            RequestQueue queue = Volley.newRequestQueue(mContext);
+
+            JsonObjectRequest jsonObj = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    if (mResultCallback != null) {
+                        mResultCallback.notifySuccess(requestType, response, errand);
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    if (mResultCallback != null) {
+                        mResultCallback.notifyError(requestType, error);
+                    }
+                }
+            });
+
+            queue.add(jsonObj);
+
+        } catch (Exception e) {
+
+        }
+    }
 }
 

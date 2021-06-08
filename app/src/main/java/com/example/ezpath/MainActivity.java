@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     SupportMapFragment mapFragment;
     GoogleMap map;
     ListView errands_list;
-    ArrayList<String> errandArray;
-    ArrayAdapter<String> errandArrayAdapter;
+    ArrayList<ErrandResults> errandArray;
+    ErrandAdapter errandArrayAdapter;
     Button addErrandButton;
     Button sideMenuButton;
     private static final int PERMISSION_REQUEST_CODE = 1;
@@ -123,16 +123,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mResultCallBack = new IResult() {
             @Override
-            public void notifySuccess(String requestType, JSONObject response) {
+            public void notifySuccess(String requestType, JSONObject response, String errand) {
                 Log.d("errand test response", "Volley requester" + requestType);
                 Log.d("errand test response", "Volley JSON post" + response);
                 try {
-                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class); // map json results to object
+                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class);// map json results to object
+                    errandResults.setErrand(errand); // set errand string
                     testErrandResults = errandResults; // rename
-                    Result[] results = errandResults.getResults();
-                    errandResults.calculateDistanceMatrix(currPlace);
+                    Result[] results = errandResults.getResults(); // all possible https results
+                    errandResults.calculateDistanceMatrix(currPlace); // matrix of distances from source to each result
                     Result bestPlace = errandResults.chooseBestPlace(1500);
                     bestResults.add(bestPlace);
+
+                    errandArray.add(errandResults); // change to add errandResults object
+                    errandArrayAdapter.notifyDataSetChanged();
+
                     map.addMarker(new MarkerOptions()
                             .position(bestPlace.getGeometry().getLocation().getLatLng())
                             .title(bestPlace.getName()));
@@ -141,6 +146,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+
+            public void notifySuccess(String requestType, JSONObject response) {
+                //not used/ stay empty
             }
 
             @Override
@@ -212,8 +221,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        errandArray = new ArrayList<String>();
-        errandArrayAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.errand_item, R.id.errand_name, errandArray);
+        errandArray = new ArrayList<ErrandResults>();
+        errandArrayAdapter = new ErrandAdapter(MainActivity.this, R.layout.errand_item, errandArray);
         errands_list.setAdapter(errandArrayAdapter);
     }
 
@@ -228,17 +237,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         String url = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
         url += query + location + rankby + key;
-        mGetUrlContent.getDataVolley("GETCALL", url);
+        mGetUrlContent.getDataVolley("GETCALL", url, keywords);
     }
 
     @Override
     public void addErrand(String errand) {
         if (errandArray.size() < 9 && currPlace != null) { // max errands is 9
-            errandArray.add(errand);
             getErrandSearchPlaceResults(currPlace, errand, 1);
-            errandArrayAdapter.notifyDataSetChanged();
         }
     }
+
+    public void removeErrand() {
+        //remove from errandArray
+        //notify array adapter change
+        //remove from bestresults
+        //new path
+        //update map
+    }
+
 
     public void openErrandDialog() {
         AddErrandDialog errandDialog = new AddErrandDialog();
