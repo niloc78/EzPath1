@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 
@@ -38,6 +39,7 @@ public class ErrandAdapter extends ArrayAdapter<ErrandResults> {
 
             holder.textView1 = (TextView) row.findViewById(R.id.errand_name);
             holder.textView2 = (TextView) row.findViewById(R.id.address);
+            holder.remove = (Button) row.findViewById(R.id.remove_button);
 
             row.setTag(holder);
         } else {
@@ -47,6 +49,16 @@ public class ErrandAdapter extends ArrayAdapter<ErrandResults> {
         ErrandResults errResults = data.get(position);
         holder.textView1.setText(errResults.getErrand());
         holder.textView2.setText(errResults.getBestPlace().getFormatted_address());
+        holder.remove.setTag(position);
+        holder.remove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                data.remove(position);
+                ((MainActivity)context).removeErrand(position);
+                notifyDataSetChanged();
+                ((MainActivity)context).updatePolyMap();
+            }
+        });
 
         return row;
     }
@@ -54,6 +66,7 @@ public class ErrandAdapter extends ArrayAdapter<ErrandResults> {
     static class ViewHolder {
         TextView textView1;
         TextView textView2;
+        Button remove;
     }
 
 

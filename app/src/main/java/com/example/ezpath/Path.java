@@ -100,7 +100,7 @@ public class Path {
 
         String origin = "origin=place_id:" + source.getId();
         String destination = "&destination=place_id:" + source.getId();
-        String waypoints = "&waypoints=" + "place_id:" + bestResults.get(0).getPlace_id();
+        String waypoints = "&waypoints=optimize:true|" + "place_id:" + bestResults.get(0).getPlace_id();
         String api_key = "&key=" + BuildConfig.MAPS_API_KEY;
 
         for (int i = 1; i <= bestResults.size() - 1; i++) {

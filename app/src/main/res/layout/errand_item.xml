@@ -13,6 +13,7 @@
         android:layout_height="80dp"
         android:background="@drawable/unselected_check_circle"/>
     <androidx.cardview.widget.CardView
+        android:id="@+id/card"
         android:layout_width="266dp"
         android:layout_height="156dp"
         android:layout_marginBottom="10dp"
@@ -44,8 +45,12 @@
                 android:layout_weight="1.25"
                 android:background="@android:color/transparent"/>
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
-
+    <Button
+        android:id="@+id/remove_button"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="remove"
+        android:layout_toRightOf="@id/card"/>
 
 </RelativeLayout>

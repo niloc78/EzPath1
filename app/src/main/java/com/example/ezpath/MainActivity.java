@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Path testPath;
     Path path;
     ArrayList<Result> bestResults;
+    ArrayList<Marker> markers;
     Polyline polyline;
 
     @Override
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         errandAddSetUp();
         bestResults = new ArrayList<Result>();
         objectMapper = new ObjectMapper();
-
+        markers = new ArrayList<Marker>();
         mResultCallBack = new IResult() {
             @Override
             public void notifySuccess(String requestType, JSONObject response, String errand) {
@@ -138,11 +139,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     errandArray.add(errandResults); // change to add errandResults object
                     errandArrayAdapter.notifyDataSetChanged();
 
-                    map.addMarker(new MarkerOptions()
+                    markers.add(map.addMarker(new MarkerOptions()
                             .position(bestPlace.getGeometry().getLocation().getLatLng())
-                            .title(bestPlace.getName()));
+                            .title(bestPlace.getName())));
                     updatePolyMap();
-//                    Log.d("parsed result", "best place based on rating: " + bestPlace.getName() + " location: " + bestPlace.getFormatted_address() + " coords: " + bestPlace.getGeometry().getLocation().getLatLng());
+                    Log.d("best results size", "best results size: " + bestResults.size());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -174,29 +175,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     public void updatePolyMap() {
-        testPath = new Path(bestResults, this);
-        testPath.getPolyline(currPlace, new PolyCallback() {
-            @Override
-            public void onSuccess() {
-                if (polyline != null) {
-                    polyline.remove();
+        if(bestResults.size() == 0) {
+            polyline.remove();
+        } else {
+            testPath = new Path(bestResults, this);
+            testPath.getPolyline(currPlace, new PolyCallback() {
+                @Override
+                public void onSuccess() {
+                    if (polyline != null) {
+                        polyline.remove();
+                    }
+                    polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
                 }
-                polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
-            }
-        });
+            });
+        }
     }
 
     public void uwu2Test(View v) {
         polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
     }
 
-//    public void calculate() {
-//        if ((currPlace != null) && (!bestResults.isEmpty())) {
-//            path = new Path(this);
-//            Result[] res = (Result[]) bestResults.toArray();
-//            path.calculateDistanceMatrixAndBuildPath(currPlace, res);
-//        }
-//    }
 
     public void drawerSetUp() {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -247,12 +245,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void removeErrand() {
+    public void removeErrand(int index) {
         //remove from errandArray
         //notify array adapter change
         //remove from bestresults
-        //new path
-        //update map
+        bestResults.remove(index);
+        markers.get(index).remove();
+        markers.remove(index);
+        Log.d("best result size: ", "best results size: " + bestResults.size());
+
     }
 
 
