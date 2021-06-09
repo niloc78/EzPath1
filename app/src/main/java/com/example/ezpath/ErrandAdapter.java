@@ -11,10 +11,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 
+import com.daimajia.swipe.adapters.ArraySwipeAdapter;
 
 import java.util.ArrayList;
 
-public class ErrandAdapter extends ArrayAdapter<ErrandResults> {
+public class ErrandAdapter extends ArraySwipeAdapter<ErrandResults> {
 
     private final Context context;
     private final ArrayList<ErrandResults> data;
@@ -61,6 +62,11 @@ public class ErrandAdapter extends ArrayAdapter<ErrandResults> {
         });
 
         return row;
+    }
+
+    @Override
+    public int getSwipeLayoutResourceId(int position) {
+        return this.layoutResourceId;
     }
 
     static class ViewHolder {

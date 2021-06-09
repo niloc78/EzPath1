@@ -31,6 +31,12 @@ android {
 }
 
 dependencies {
+    //noinspection GradleCompatible
+    implementation 'com.android.support:recyclerview-v7:21.0.0'
+    //noinspection GradleCompatible
+    implementation 'com.android.support:support-v4:20.+'
+    implementation "com.daimajia.swipelayout:library:1.2.0@aar"
+
     implementation 'com.google.maps.android:android-maps-utils:2.2.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.5'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.8.5'
