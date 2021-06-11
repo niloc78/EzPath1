@@ -1,26 +1,35 @@
 package com.example.ezpath;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -37,6 +46,7 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -63,6 +73,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.slider.Slider;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
 
@@ -90,11 +104,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<Result> bestResults;
     ArrayList<Marker> markers;
     Polyline polyline;
+    Chip chip_distance;
+    Chip chip_rating;
+    Button price_level_0;
+    Button price_level_1;
+    Button price_level_2;
+    Button price_level_3;
+    Button price_level_4;
+    private int price_level = 0;
+    private double rating = 1;
+    private int radius = 1500;
+    Slider radiusSlider;
+    RatingBar ratingBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         drawerSetUp();
 
@@ -104,7 +131,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         botNavSetUp();
 
+        ratingBar = (RatingBar) findViewById(R.id.rating_bar);
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                rating = ratingBar.getRating();
+                Log.d("rating", "rating: " + rating);
+            }
+        });
+
+        radiusSlider = (Slider) findViewById(R.id.radius_slider);
+        radiusSlider.addOnChangeListener(new Slider.OnChangeListener() {
+            @Override
+            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+                radius = (int) radiusSlider.getValue();
+            }
+        });
+
+        chip_rating = (Chip) findViewById(R.id.chip_rating);
+        chip_rating.setChecked(true);
+
+
         checkRequestPermissions();
+
+        priceLevelButtonsSetUp();
 
         initializePlaces();
         initPlaceSelectionListener();
@@ -134,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     testErrandResults = errandResults; // rename
                     Result[] results = errandResults.getResults(); // all possible https results
                     errandResults.calculateDistanceMatrix(currPlace); // matrix of distances from source to each result
-                    Result bestPlace = errandResults.chooseBestPlace(1500);
+                    Result bestPlace = errandResults.chooseBestPlace(radius, price_level, rating, chip_rating.isChecked());
                     bestResults.add(bestPlace);
 
                     errandArray.add(errandResults); // change to add errandResults object
@@ -161,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         mGetUrlContent = new GetUrlContent(mResultCallBack, this);
+
     }
 
     public void uwuTest(View v) {
@@ -175,8 +226,135 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
+
+
+
+    public void priceLevelButtonsSetUp() {
+
+        price_level_0 = (Button) findViewById(R.id.price_level_0);
+        price_level_1 = (Button) findViewById(R.id.price_level_1);
+        price_level_2 = (Button) findViewById(R.id.price_level_2);
+        price_level_3 = (Button) findViewById(R.id.price_level_3);
+        price_level_4 = (Button) findViewById(R.id.price_level_4);
+
+        price_level_0.setPressed(true);
+        price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+        price_level_0.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                price_level_0.setPressed(true);
+                price_level = 0;
+                price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+                price_level_1.setPressed(false);
+                price_level_1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_2.setPressed(false);
+                price_level_2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_3.setPressed(false);
+                price_level_3.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_4.setPressed(false);
+                price_level_4.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+                return true;
+            }
+        });
+
+        price_level_1.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                price_level_1.setPressed(true);
+                price_level = 1;
+                price_level_1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+                price_level_2.setPressed(false);
+                price_level_2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_3.setPressed(false);
+                price_level_3.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_4.setPressed(false);
+                price_level_4.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_0.setPressed(false);
+                price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                return true;
+            }
+        });
+
+        price_level_2.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                price_level_2.setPressed(true);
+                price_level = 2;
+                price_level_2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+                price_level_1.setPressed(false);
+                price_level_1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_3.setPressed(false);
+                price_level_3.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_4.setPressed(false);
+                price_level_4.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_0.setPressed(false);
+                price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+                return true;
+            }
+        });
+
+        price_level_3.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                price_level_3.setPressed(true);
+                price_level = 3;
+                price_level_3.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+                price_level_1.setPressed(false);
+                price_level_1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_2.setPressed(false);
+                price_level_2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_4.setPressed(false);
+                price_level_4.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_0.setPressed(false);
+                price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+                return true;
+            }
+        });
+
+        price_level_4.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                price_level_4.setPressed(true);
+                price_level = 4;
+                price_level_4.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.darklimegreen));
+
+                price_level_1.setPressed(false);
+                price_level_1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_2.setPressed(false);
+                price_level_2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_3.setPressed(false);
+                price_level_3.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+
+                price_level_0.setPressed(false);
+                price_level_0.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.quantum_grey));
+                return true;
+            }
+        });
+
+    }
+
     public void updatePolyMap() {
-        if(bestResults.size() == 0) {
+        if (bestResults.size() == 0) {
             polyline.remove();
         } else {
             testPath = new Path(bestResults, this);
@@ -186,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (polyline != null) {
                         polyline.remove();
                     }
-                    polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()).width(17).color(Color.CYAN));
+                    polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()).width(17).color(Color.DKGRAY));
                 }
             });
         }
@@ -210,13 +388,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+
     public void errandAddSetUp() {
         errands_list = (ListView) findViewById(R.id.errands_list);
         addErrandButton = (Button) findViewById(R.id.add_errand_button);
         addErrandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openErrandDialog();
+                if (currPlace != null) {
+                    openErrandDialog();
+                } else {
+                    Toast.makeText(MainActivity.this, "You must select your start location", Toast.LENGTH_LONG).show();
+                }
+
             }
         });
 
@@ -265,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(0,0)));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(0, 0)));
         map = googleMap;
     }
 
@@ -322,13 +506,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MainActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
 
                 //add function once place is selected
-                if(map != null) {
+                if (map != null) {
                     CameraPosition cameraPosition = new CameraPosition.Builder().target(latLng).zoom(10).build();
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    if (checkPermission()) {
+                        map.setMyLocationEnabled(true);
+                    }
+
+
                     if (currMarker == null) {
                         currMarker = map.addMarker(new MarkerOptions()
                                 .position(latLng)
-                                .title("Current Location"));
+                                .title("Current Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                     } else {
                         currMarker.setPosition(latLng);
                     }
@@ -338,13 +527,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
             }
 
+
             @Override
             public void onError(@NonNull Status status) {
+                currPlace = null;
                 Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
                 //on close or error
             }
         });
         ((View) findViewById(R.id.places_autocomplete_search_button)).setVisibility(View.GONE);
+
         ((EditText) findViewById(R.id.places_autocomplete_search_input)).setHint("Enter your location");
     }
 
@@ -386,6 +578,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     boolean locationPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
                     if (locationPermission) {
+
 
                         Toast.makeText(MainActivity.this,
                                 "Permission accepted", Toast.LENGTH_LONG).show();

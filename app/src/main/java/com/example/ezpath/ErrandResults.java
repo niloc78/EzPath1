@@ -111,4 +111,42 @@ public class ErrandResults {
         }
         return bestPlace;
     }
+    public Result chooseBestPlace(int r, int price_level) {
+        bestPlace = results[0];
+        for (int i = 0; i < results.length - 1; i++) {
+            if (distMatrix[0][i] > r) {
+                continue;
+            }
+            if (results[i + 1].getRating() > bestPlace.getRating()) {
+                bestPlace = results[i + 1];
+            }
+        }
+        return bestPlace;
+    }
+    public Result chooseBestPlace(int r, int price_level, double rating, boolean chip_rating) {
+        bestPlace = results[0];
+        for (int i = 0; i < results.length - 1; i++) {
+            if (distMatrix[0][i] > r) {
+                continue;
+            }
+
+            if ((results[i].getPrice_level() != price_level) && (price_level != 0)) {
+                continue;
+            }
+
+            if (results[i].getRating() < rating) {
+                continue;
+            }
+
+            if (chip_rating == true) {
+                if (results[i + 1].getRating() > bestPlace.getRating()) {
+                    bestPlace = results[i + 1];
+                }
+            } else {
+                break;
+            }
+
+        }
+        return bestPlace;
+    }
 }

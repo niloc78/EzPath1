@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="check_button_style" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:foreground">?selectableItemBackgroundBorderless</item>
+        <item name="android:background">@drawable/check_button_selector_style</item>
+    </style>
+    <style name="button_shape_circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="remove_button_style" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:foreground">@drawable/remove_button</item>
+    </style>
+    <style name="chip_selection_style" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:textColor">@color/darklimegreen</item>
+        <item name="chipBackgroundColor">@color/limegreen</item>
+    </style>
+</resources>

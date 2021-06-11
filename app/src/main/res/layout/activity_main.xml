@@ -57,13 +57,16 @@
                     android:textColor="@color/black" />
 
                 <Button
+                    android:id="@+id/search_icon"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:layout_marginTop="27dp"
                     android:layout_alignParentRight="true"
+                    android:onClick="navigateToHomeFromDash"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="30dp"
-                    android:background="@drawable/search_icon" />
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:foreground="@drawable/search_icon" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -91,6 +94,7 @@
             <ViewAnimator
                 android:id="@+id/view_animator_home_map_notes"
                 android:layout_width="match_parent"
+                android:layout_above="@+id/nav_bar"
                 android:layout_height="match_parent">
 
 
@@ -99,7 +103,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginBottom="20dp"
                     android:gravity="center">
 
                     <EditText
@@ -114,43 +117,43 @@
                         android:paddingBottom="20dp"
                         android:scrollbars="vertical"
                         android:background="@drawable/notes_page"/>
-                    <Button
-                        android:id="@+id/uwuTest"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="test button"
-                        android:onClick="uwuTest"/>
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toRightOf="@+id/uwuTest"
-                        android:text="click here for distance matrix"
-                        android:onClick="uwu2Test"/>
                 </RelativeLayout>
 
-                <LinearLayout
+                <RelativeLayout
                     android:id="@+id/home"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:layout_gravity="center">
 
                     <Button
                         android:id="@+id/side_menu"
                         android:layout_width="35dp"
                         android:layout_height="25dp"
+                        android:gravity="left|top"
                         android:layout_marginLeft="20dp"
                         android:layout_marginTop="25dp"
                         android:alpha="0.75"
                         android:background="@drawable/side_menu_icon"/>
+                    <Button
+                        android:id="@+id/add_errand_button"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_marginTop="25dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentTop="true"
+                        android:clickable="true"
+                        android:background="?selectableItemBackgroundBorderless"
+                        android:foreground="@drawable/add_icon"/>
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/errand_bar"
                         android:layout_width="match_parent"
                         android:layout_height="100dp"
                         android:layout_marginTop="25dp"
-                        android:orientation="horizontal"
                         android:layout_gravity="center"
+                        android:gravity="center"
+                        android:layout_below="@id/add_errand_button"
                         android:background="@drawable/errand_bar">
 
                         <TextView
@@ -159,25 +162,18 @@
                             android:layout_height="match_parent"
                             android:textSize="31sp"
                             android:gravity="center"
-                            android:layout_marginLeft="80dp"
                             android:textColor="#B2B1B1"
                             android:fontFamily="@font/avenirnextreg"
                             android:text="Today's errands"/>
-                        <Button
-                            android:id="@+id/add_errand_button"
-                            android:layout_width="35dp"
-                            android:layout_height="35dp"
-                            android:layout_gravity="center"
-                            android:layout_marginLeft="30dp"
-                            android:background="@drawable/add_icon" />
-                    </LinearLayout>
+                    </RelativeLayout>
 
                     <ListView
                         android:id="@+id/errands_list"
                         android:layout_width="match_parent"
+                        android:layout_below="@id/errand_bar"
                         android:layout_height="wrap_content"
                         android:divider="@null"/>
-                </LinearLayout>
+                </RelativeLayout>
 
                 <RelativeLayout
                     android:id="@+id/map_page_layout"
@@ -226,7 +222,202 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:id="@+id/drawer_nav_view"
-        android:layout_gravity="start"
-        app:menu="@menu/side_bar_items"/>
+        android:layout_gravity="start">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="30dp">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="left|center"
+                android:text="Save Current Path"
+                android:paddingLeft="15dp"
+                android:background="@null"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="left|center"
+                android:paddingLeft="15dp"
+                android:text="Load Path"
+                android:background="@null"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="Preferences"
+                android:paddingLeft="15dp"
+                android:gravity="left|center"
+                android:fontFamily="@font/avenirnextreg"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0.1dp"
+                android:background="@color/quantum_grey"
+                android:paddingRight="40dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Price Level"
+                android:fontFamily="@font/avenirnextitalic"
+                android:textSize="11sp"
+                android:paddingLeft="12dp"
+                android:layout_marginTop="15dp"
+                android:gravity="left|center"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="5dp"
+                android:paddingLeft="15dp"
+                android:gravity="left|center">
+                <Button
+                    android:id="@+id/price_level_1"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="$"
+                    android:fontFamily="@font/avenirnextreg"
+                    android:textColor="@color/quantum_grey"
+                    android:background="@null"/>
+                <Button
+                    android:id="@+id/price_level_2"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="$$"
+                    android:fontFamily="@font/avenirnextreg"
+                    android:textColor="@color/quantum_grey"
+                    android:background="@null"/>
+                <Button
+                    android:id="@+id/price_level_3"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="$$$"
+                    android:fontFamily="@font/avenirnextreg"
+                    android:textColor="@color/quantum_grey"
+                    android:background="@null"/>
+                <Button
+                    android:id="@+id/price_level_4"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="$$$$"
+                    android:fontFamily="@font/avenirnextreg"
+                    android:textColor="@color/quantum_grey"
+                    android:background="@null"/>
+                <Button
+                    android:id="@+id/price_level_0"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:text="None"
+                    android:fontFamily="@font/avenirnextreg"
+                    android:textColor="@color/quantum_grey"
+                    android:background="@null"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Minimum Rating"
+                android:fontFamily="@font/avenirnextitalic"
+                android:textSize="11sp"
+                android:paddingLeft="12dp"
+                android:layout_marginTop="5dp"
+                android:gravity="left|center"/>
+
+            <RatingBar
+                android:id="@+id/rating_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="15dp"
+                android:rating="1"
+                android:numStars="5"
+                android:stepSize="0.1"
+                android:progressTint="@color/darklimegreen"
+                android:secondaryProgressTint="@android:color/transparent"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Radius (meters)"
+                android:fontFamily="@font/avenirnextitalic"
+                android:textSize="11sp"
+                android:paddingLeft="12dp"
+                android:layout_marginTop="5dp"
+                android:gravity="left|center"/>
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/radius_slider"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="5dp"
+                android:valueFrom="300"
+                android:valueTo="5000"
+                android:stepSize="1"
+                app:tickColor="@android:color/transparent"
+                app:trackColorActive="@color/darklimegreen"
+                app:trackColorInactive="@color/white"
+                app:thumbColor="@color/limegreen"
+                android:value="1500"
+                android:theme="@style/Theme.MaterialComponents.Light"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Prioritize"
+                android:fontFamily="@font/avenirnextitalic"
+                android:textSize="11sp"
+                android:paddingLeft="12dp"
+                android:layout_marginTop="5dp"
+                android:gravity="left|center"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                app:singleLine="true"
+                android:layout_marginLeft="15dp"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:theme="@style/Theme.MaterialComponents.Light"
+                app:chipSpacingHorizontal="5dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    app:chipBackgroundColor="@color/chip_selector_style"
+                    android:textColor="@color/chip_selector_text_style"
+                    android:text="Distance"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    app:chipBackgroundColor="@color/chip_selector_style"
+                    android:textColor="@color/chip_selector_text_style"
+                    android:text="Rating"/>
+
+            </com.google.android.material.chip.ChipGroup>
+
+
+        </LinearLayout>
+
+
+
+    </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>
