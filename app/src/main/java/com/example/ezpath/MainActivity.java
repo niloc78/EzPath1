@@ -1,23 +1,18 @@
 package com.example.ezpath;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
+
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Intent;
+
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
-import android.location.Location;
-import android.os.Build;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -25,25 +20,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
+
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RatingBar;
-import android.widget.RelativeLayout;
-import android.widget.SearchView;
+
 import android.widget.Toast;
 import android.widget.ViewAnimator;
-import android.widget.ViewFlipper;
+
 
 import com.android.volley.VolleyError;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.MapFragment;
+
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -53,7 +46,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.Task;
+
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -63,20 +56,16 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
+
 import com.google.android.material.slider.Slider;
+import com.google.gson.Gson;
+
+import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
 
@@ -97,14 +86,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Place currPlace;
     GetUrlContent mGetUrlContent;
     private static final String API_KEY = BuildConfig.MAPS_API_KEY;
-    ObjectMapper objectMapper;
-    ErrandResults testErrandResults;
+    Gson objectMapper;
     Path testPath;
-    Path path;
     ArrayList<Result> bestResults;
     ArrayList<Marker> markers;
     Polyline polyline;
-    Chip chip_distance;
     Chip chip_rating;
     Button price_level_0;
     Button price_level_1;
@@ -121,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Realm.init(this);
 
 
         drawerSetUp();
@@ -171,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         errandAddSetUp();
         bestResults = new ArrayList<Result>();
-        objectMapper = new ObjectMapper();
+        objectMapper = new Gson();
         markers = new ArrayList<Marker>();
         mResultCallBack = new IResult() {
             @Override
@@ -179,10 +167,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("errand test response", "Volley requester" + requestType);
                 Log.d("errand test response", "Volley JSON post" + response);
                 try {
-                    ErrandResults errandResults = objectMapper.readValue(response.toString(), ErrandResults.class);// map json results to object
+                    ErrandResults errandResults = objectMapper.fromJson(response.toString(), ErrandResults.class);// map json results to object
                     errandResults.setErrand(errand); // set errand string
-                    testErrandResults = errandResults; // rename
-                    Result[] results = errandResults.getResults(); // all possible https results
+
                     errandResults.calculateDistanceMatrix(currPlace); // matrix of distances from source to each result
                     Result bestPlace = errandResults.chooseBestPlace(radius, price_level, rating, chip_rating.isChecked());
                     bestResults.add(bestPlace);
@@ -195,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             .title(bestPlace.getName())));
                     updatePolyMap();
                     Log.d("best results size", "best results size: " + bestResults.size());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

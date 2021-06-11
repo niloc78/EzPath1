@@ -1,27 +1,30 @@
 package com.example.ezpath;
 
-import android.content.Context;
+
 import android.util.Log;
 
-import com.android.volley.VolleyError;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.maps.android.SphericalUtil;
 
-import org.json.JSONObject;
+
 
 import java.util.Arrays;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class ErrandResults {
-    @JsonProperty("html_attributions") String[] html_attributions;
+
+import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
+
+public class ErrandResults extends RealmObject {
+    @Ignore String[] html_attributions;
     String next_page_token;
-    Result[] results;
+    @Ignore Result[] results;
     Result bestPlace;
     String errand;
-    int[][] distMatrix;
+    @Ignore int[][] distMatrix;
+
+    public ErrandResults(){
+    }
 
     public String[] getHtml_attribution() {
         return html_attributions;

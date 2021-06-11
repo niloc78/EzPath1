@@ -1,27 +1,23 @@
 package com.example.ezpath;
 
 import android.content.Context;
-import android.os.Build;
+
 import android.util.Log;
 
 import com.android.volley.VolleyError;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polygon;
+
 import com.google.android.libraries.places.api.model.Place;
 import com.google.maps.android.PolyUtil;
 
 import org.json.JSONArray;
-import org.json.JSONException;
+
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class Path {
     private String overview_polyline;

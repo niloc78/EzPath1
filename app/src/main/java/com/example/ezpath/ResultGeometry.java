@@ -1,9 +1,9 @@
 package com.example.ezpath;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class ResultGeometry {
+import io.realm.RealmObject;
+
+public class ResultGeometry extends RealmObject{
     ResultCoord location;
 
     public ResultCoord getLocation() {

@@ -1,17 +1,19 @@
 package com.example.ezpath;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Result {
+import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
+
+public class Result extends RealmObject{
     String business_status;
     int price_level;
     String formatted_address;
     ResultGeometry geometry;
     String name;
-    Object opening_hours;
+    @Ignore Object opening_hours;
     String place_id;
     Double rating;
+    @Ignore
     String[] types;
 
     public String getBusiness_status() {

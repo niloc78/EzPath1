@@ -1,10 +1,12 @@
 package com.example.ezpath;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.google.android.gms.maps.model.LatLng;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class ResultCoord {
+import io.realm.RealmObject;
+
+
+public class ResultCoord extends RealmObject{
     Double lat;
     Double lng;
 
