@@ -231,16 +231,20 @@
             android:layout_marginTop="30dp">
 
             <Button
+                android:id="@+id/save_path"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="left|center"
                 android:text="Save Current Path"
+                android:onClick="openSaveDialog"
                 android:paddingLeft="15dp"
                 android:background="@null"/>
             <Button
+                android:id="@+id/load_path"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="left|center"
+                android:onClick="load"
                 android:paddingLeft="15dp"
                 android:text="Load Path"
                 android:background="@null"/>

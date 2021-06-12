@@ -66,9 +66,14 @@ import com.google.android.material.slider.Slider;
 import com.google.gson.Gson;
 
 import io.realm.Realm;
+import io.realm.RealmCollection;
+import io.realm.RealmConfiguration;
+import io.realm.RealmList;
+import io.realm.RealmQuery;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener, SavePathDialog.SavePathDialogListener {
 
+    Realm uiThreadRealm;
     ViewAnimator viewAnimator_dash_home;
     ViewAnimator viewAnimator_home_notes_map;
     BottomNavigationView bottom_nav_view;
@@ -109,6 +114,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         Realm.init(this);
+
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .name("saved-paths")
+                .allowQueriesOnUiThread(true)
+                .allowWritesOnUiThread(true)
+                .compactOnLaunch()
+                .inMemory() //delete when ready
+                .build();
+        uiThreadRealm = Realm.getInstance(config);
 
 
         drawerSetUp();
@@ -201,18 +215,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void uwuTest(View v) {
 
-        testPath = new Path(bestResults, this);
-        testPath.getPolyline(currPlace, new PolyCallback() {
-            @Override
-            public void onSuccess() {
-                polyline.remove();
-                polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
-            }
-        });
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        uiThreadRealm.close();
 
     }
+
 
 
 
@@ -357,9 +367,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void uwu2Test(View v) {
-        polyline = map.addPolyline(new PolylineOptions().addAll(testPath.getDecoded_poly()));
-    }
 
 
     public void drawerSetUp() {
@@ -432,6 +439,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void openErrandDialog() {
         AddErrandDialog errandDialog = new AddErrandDialog();
         errandDialog.show(getSupportFragmentManager(), "errand dialog");
+    }
+
+    public void openSaveDialog(View v) {
+        SavePathDialog saveDialog = new SavePathDialog();
+        saveDialog.show(getSupportFragmentManager(), "save dialog");
     }
 
     @Override
@@ -632,4 +644,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
     }
+
+    @Override
+    public void savePath(String pathName) {
+        uiThreadRealm.executeTransaction(r -> {
+            SavedPath savedPath = new SavedPath();
+            RealmList<ErrandResults> l = new RealmList<>();
+            l.addAll(errandArray);
+            savedPath.setErrResultsList(l);
+            savedPath.setPathName(pathName);
+            r.insertOrUpdate(savedPath);
+        });
+
+    }
+
+    public void load(View v) {
+        SavedPath p = uiThreadRealm.where(SavedPath.class).equalTo("pathName", "test").findFirst(); //name path test
+//        Log.d("path name:", "path name: " + p.getPathName());
+        Toast.makeText(MainActivity.this, "pathname: " + p.getPathName(), Toast.LENGTH_LONG).show();
+        //set errandArray
+        //add markers
+        //set bestResults
+        //updatepolymap
+
+        //notifydatasetchanged
+    }
+
 }

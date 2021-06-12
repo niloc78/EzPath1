@@ -8,6 +8,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.maps.android.SphericalUtil;
 
 
+import org.bson.types.ObjectId;
 
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ public class ErrandResults extends RealmObject {
 
     public ErrandResults(){
     }
+
 
     public String[] getHtml_attribution() {
         return html_attributions;
