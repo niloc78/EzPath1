@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -87,8 +88,12 @@ public class SavedExpandableAdapter extends BaseExpandableListAdapter {
         expandedListTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SavedPath path = ((MainActivity) context).uiThreadRealm.where(SavedPath.class).equalTo("pathName", expandedListText).findFirst();
-                ((MainActivity) context).load(path);
+                if (((MainActivity)context).currPlace != null) {
+                    SavedPath path = ((MainActivity) context).uiThreadRealm.where(SavedPath.class).equalTo("pathName", expandedListText).findFirst();
+                    ((MainActivity) context).load(path);
+                } else {
+                    Toast.makeText(context, "You must choose a start location", Toast.LENGTH_LONG).show();
+                }
             }
         });
         Button xButton = (Button) convertView.findViewById(R.id.x_button);

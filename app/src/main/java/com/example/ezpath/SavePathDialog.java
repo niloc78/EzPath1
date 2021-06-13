@@ -36,6 +36,7 @@ public class SavePathDialog extends AppCompatDialogFragment {
                 .setPositiveButton("save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
                         String pathName = save_path_edit.getText().toString();
                         listener.savePath(pathName);
                     }

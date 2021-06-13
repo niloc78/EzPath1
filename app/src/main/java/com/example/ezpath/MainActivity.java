@@ -125,8 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .name("saved-paths")
                 .allowQueriesOnUiThread(true)
                 .allowWritesOnUiThread(true)
-                .compactOnLaunch()
-                .inMemory()//delete when ready
+                .compactOnLaunch()//delete when ready
                 .build();
         uiThreadRealm = Realm.getInstance(config);
 
@@ -145,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
                 rating = ratingBar.getRating();
-                Log.d("rating", "rating: " + rating);
             }
         });
 
@@ -185,8 +183,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mResultCallBack = new IResult() {
             @Override
             public void notifySuccess(String requestType, JSONObject response, String errand) {
-                Log.d("errand test response", "Volley requester" + requestType);
-                Log.d("errand test response", "Volley JSON post" + response);
                 try {
                     ErrandResults errandResults = objectMapper.fromJson(response.toString(), ErrandResults.class);// map json results to object
                     errandResults.setErrand(errand); // set errand string
@@ -202,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             .position(bestPlace.getGeometry().getLocation().getLatLng())
                             .title(bestPlace.getName())));
                     updatePolyMap();
-                    Log.d("best results size", "best results size: " + bestResults.size());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -429,14 +424,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void removeErrand(int index) {
-        //remove from errandArray
-        //notify array adapter change
-        //remove from bestresults
         bestResults.remove(index);
         markers.get(index).remove();
         markers.remove(index);
-        Log.d("best result size: ", "best results size: " + bestResults.size());
-
     }
 
 
@@ -446,8 +436,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void openSaveDialog(View v) {
-        SavePathDialog saveDialog = new SavePathDialog();
-        saveDialog.show(getSupportFragmentManager(), "save dialog");
+        if (!errandArray.isEmpty()) {
+            SavePathDialog saveDialog = new SavePathDialog();
+            saveDialog.show(getSupportFragmentManager(), "save dialog");
+        } else {
+            Toast.makeText(MainActivity.this, "The errand list must contain at least one task.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -506,9 +500,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onPlaceSelected(@NonNull Place place) {
                 LatLng latLng = place.getLatLng();
                 currPlace = place;
-                Toast.makeText(MainActivity.this, latLng.toString(), Toast.LENGTH_SHORT).show();
 
-                //add function once place is selected
                 if (map != null) {
                     CameraPosition cameraPosition = new CameraPosition.Builder().target(latLng).zoom(10).build();
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
@@ -534,7 +526,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onError(@NonNull Status status) {
                 currPlace = null;
-                Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
                 //on close or error
             }
         });
@@ -571,26 +562,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-
             case PERMISSION_REQUEST_CODE:
-
-
                 if (grantResults.length > 0) {
-
-
                     boolean locationPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-
                     if (locationPermission) {
-
-
                         Toast.makeText(MainActivity.this,
                                 "Permission accepted", Toast.LENGTH_LONG).show();
-
-
                     } else {
                         Toast.makeText(MainActivity.this,
                                 "Permission denied", Toast.LENGTH_LONG).show();
-
                     }
                     break;
                 }
@@ -669,6 +649,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void load(SavedPath path) {
+
         List<ErrandResults> l = uiThreadRealm.copyFromRealm(path.getErrResultsList());
         errandArray.clear();
         errandArray.addAll(l);
