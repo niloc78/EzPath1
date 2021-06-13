@@ -23,6 +23,7 @@ import android.view.View;
 
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.RatingBar;
 
@@ -57,8 +58,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONObject;
 
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.android.material.chip.Chip;
 
@@ -70,6 +73,7 @@ import io.realm.RealmCollection;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmQuery;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, AddErrandDialog.AddErrandDialogListener, SavePathDialog.SavePathDialogListener {
 
@@ -107,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int radius = 1500;
     Slider radiusSlider;
     RatingBar ratingBar;
+    ExpandableListView expandableListView;
+    SavedExpandableAdapter savedExpandableAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,10 +126,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .allowQueriesOnUiThread(true)
                 .allowWritesOnUiThread(true)
                 .compactOnLaunch()
-                .inMemory() //delete when ready
+                .inMemory()//delete when ready
                 .build();
         uiThreadRealm = Realm.getInstance(config);
 
+        setExpandableListView();
 
         drawerSetUp();
 
@@ -222,9 +229,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiThreadRealm.close();
 
     }
-
-
-
 
     public void priceLevelButtonsSetUp() {
 
@@ -647,27 +651,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void savePath(String pathName) {
-        uiThreadRealm.executeTransaction(r -> {
-            SavedPath savedPath = new SavedPath();
-            RealmList<ErrandResults> l = new RealmList<>();
-            l.addAll(errandArray);
-            savedPath.setErrResultsList(l);
-            savedPath.setPathName(pathName);
-            r.insertOrUpdate(savedPath);
-        });
+        if(uiThreadRealm.where(SavedPath.class).equalTo("pathName", pathName).findFirst() != null) {
+            Toast.makeText(MainActivity.this, "This name already exists!", Toast.LENGTH_LONG).show();
+        } else {
+            uiThreadRealm.executeTransaction(r -> {
+                SavedPath savedPath = new SavedPath();
+                RealmList<ErrandResults> l = new RealmList<>();
+                l.addAll(errandArray);
+                savedPath.setErrResultsList(l);
+                savedPath.setPathName(pathName);
+                savedExpandableAdapter.savedPathNames.add(pathName);
+                savedExpandableAdapter.notifyDataSetChanged();
+                r.insertOrUpdate(savedPath);
+            });
+        }
 
     }
 
-    public void load(View v) {
-        SavedPath p = uiThreadRealm.where(SavedPath.class).equalTo("pathName", "test").findFirst(); //name path test
-//        Log.d("path name:", "path name: " + p.getPathName());
-        Toast.makeText(MainActivity.this, "pathname: " + p.getPathName(), Toast.LENGTH_LONG).show();
-        //set errandArray
-        //add markers
-        //set bestResults
-        //updatepolymap
+    public void load(SavedPath path) {
+        List<ErrandResults> l = uiThreadRealm.copyFromRealm(path.getErrResultsList());
+        errandArray.clear();
+        errandArray.addAll(l);
+        for (int i = 0; i <= markers.size() - 1; i++) {
+            markers.get(i).remove();
+        }
 
-        //notifydatasetchanged
+        markers.clear();
+        bestResults.clear();
+        for (int i = 0; i<= errandArray.size() - 1; i++) {
+            bestResults.add(errandArray.get(i).getBestPlace());
+
+            markers.add(map.addMarker(new MarkerOptions()
+            .position(errandArray.get(i).getBestPlace().getGeometry().getLocation().getLatLng())
+            .title(errandArray.get(i).getBestPlace().getName())));
+        }
+        errandArrayAdapter.notifyDataSetChanged();
+        updatePolyMap();
+
+    }
+
+    public void setExpandableListView() {
+        expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
+
+        RealmResults<SavedPath> savedResults = uiThreadRealm.where(SavedPath.class).findAll();
+        List<SavedPath> savedPaths = uiThreadRealm.copyFromRealm(savedResults);
+        ArrayList<String> pathNames = new ArrayList<String>();
+        for (int i = 0; i <= savedPaths.size() - 1; i++) {
+            pathNames.add(savedPaths.get(i).getPathName());
+        }
+        savedExpandableAdapter = new SavedExpandableAdapter(this, pathNames);
+        expandableListView.setAdapter(savedExpandableAdapter);
+
     }
 
 }

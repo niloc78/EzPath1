@@ -237,17 +237,19 @@
                 android:gravity="left|center"
                 android:text="Save Current Path"
                 android:onClick="openSaveDialog"
+                android:textSize="17sp"
+                android:fontFamily="@font/avenirnextbold"
                 android:paddingLeft="15dp"
-                android:background="@null"/>
-            <Button
-                android:id="@+id/load_path"
+                android:background="?selectableItemBackground"/>
+
+            <ExpandableListView
+                android:id="@+id/expandableListView"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:gravity="left|center"
-                android:onClick="load"
-                android:paddingLeft="15dp"
-                android:text="Load Path"
-                android:background="@null"/>
+                android:layout_height="wrap_content"
+                android:divider="@color/quantum_grey"
+                android:dividerHeight="0.5dp"
+                android:layoutDirection="rtl"/>
+
 
             <TextView
                 android:layout_width="match_parent"
